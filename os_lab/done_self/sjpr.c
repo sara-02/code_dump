@@ -1,0 +1,180 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+int main()
+{
+	int *p,*bt,*bt1,*at,*oz,*qu; int i,j,k,l,t,fr,re,z; int tl;float avg=0.0; int wt;
+	int check,c;
+	FILE *pt;
+	pt=fopen("sjpr.txt","r");
+	if(pt==NULL)
+	{
+		printf("Error\n");
+		exit(1);
+	}
+	t=0;
+	while(!feof(pt))
+	{
+		fscanf(pt,"%d%d%d",&i,&j,&l);
+		if(i==1234)
+			break;
+		
+			t++;
+	}
+	printf("%d\n\n",t);
+	fclose(pt);
+	p=(int*)malloc(sizeof(int)*t);
+	bt=(int*)malloc(sizeof(int)*t);
+	bt1=(int*)malloc(sizeof(int)*t);
+	at=(int*)malloc(sizeof(int)*t);
+	oz=(int*)malloc(sizeof(int)*t*8);
+	qu=(int*)malloc(sizeof(int)*t);
+	k=0;tl=0;
+	pt=fopen("sjpr.txt","r");
+	while(!feof(pt))
+	{
+		fscanf(pt,"%d%d%d",&i,&j,&l);
+		if(i==1234)
+			break;
+		p[k]=i;
+		at[k]=j;
+		bt[k]=l;
+		bt1[k]=l;
+		tl+=l;
+		k++;
+	}
+	for(i=0;i<t;i++)
+		printf("%d\t%d\t%d\n",p[i],at[i],bt[i]);
+	
+	//sort by arrival time
+	
+	printf("---\n\n\n");
+	for(i=0;i<t;i++)
+	{
+		for(j=i+1;j<t;j++)
+			{
+				if(at[j]<at[i])
+				{
+					k=at[i];	
+					at[i]=at[j];
+					at[j]=k;
+					k=bt[j];
+					bt[j]=bt[i];
+					bt[i]=k;
+					k=p[j];
+					p[j]=p[i];
+					p[i]=k;
+					k=bt1[j];
+					bt1[j]=bt1[i];
+					bt1[i]=k;
+				}	
+			}
+	}
+
+	check=0;i=0;z=0;fr=0;re=0;c=0;
+	while(check<t)
+	{
+		if(at[c]==i)
+		{
+			while(at[c]==i)
+			{
+				qu[re]=p[c];
+				re++;
+				c++;
+			}
+		}
+		for(j=fr;j<re;j++)
+		printf("P%d|-->",qu[j]);
+	        printf("\n");
+		for(j=fr;j<re;j++)
+		{
+			for(k=j+1;k<re;k++)
+			{
+				if(bt1[k]<bt1[j])
+				{
+					l=qu[k];
+					qu[k]=qu[j];
+					qu[j]=l;
+					l=at[k];	
+					at[k]=at[j];
+					at[j]=l;
+					l=bt[j];
+					bt[j]=bt[k];
+					bt[k]=l;
+					l=p[j];
+					p[j]=p[k];
+					p[k]=l;
+					l=bt1[j];
+					bt1[j]=bt1[k];
+					bt1[k]=l;	
+				}
+				if((bt1[k]==bt1[j])&&(at[k]<at[j]))
+				{
+					l=qu[j];
+					qu[j]=qu[k];
+					qu[k]=l;
+					l=at[k];	
+					at[k]=at[j];
+					at[j]=l;
+					l=bt[j];
+					bt[j]=bt[k];
+					bt[k]=l;
+					l=p[j];
+					p[j]=p[k];
+					p[k]=l;
+					l=bt1[j];
+					bt1[j]=bt1[k];
+					bt1[k]=l;
+				}
+			}
+		}
+		if(qu[fr]!=0)
+		{
+		oz[z]=qu[fr];
+		z++;
+		bt1[fr]--;
+		if(bt1[fr]==0)
+		{
+			fr++;
+			check++;
+		}
+		}		
+		i++;
+	
+	}
+	for(j=0;j<t;j++)
+	{
+		fr=at[j];
+		wt=0;
+		for(k=0;k<z;k++)
+		{
+			re=k;
+			if(oz[k]==p[j])
+			{      if(fr<=re)
+				{
+					wt=wt+(re-fr);
+					fr=re+1;
+				}
+			}
+		}
+		avg+=wt;
+	printf("%d\t%d\t%d\t%d\t%d\n",p[j],at[j],bt[j],wt,(bt[j]+wt));
+	}
+		
+	for(j=0;j<z;j++)
+		printf("---");
+	printf("\n|");
+	for(j=0;j<z;j++)
+		printf("P%d|",oz[j]);
+	printf("\n");
+		for(j=0;j<i;j++)
+		printf("---");
+	printf("\n");
+	avg=avg/t;
+	printf("the avg waiting time is=%f ms\n",avg);
+	avg=avg*t;
+	avg=avg+tl;
+	avg=avg/t;
+	printf("the avg TAT is=%f ms \n",avg);
+	return 0;  
+}

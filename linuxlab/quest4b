@@ -1,0 +1,15 @@
+ls -l -S|tr -s " "| cut -d " " -f5,9 >temp1
+cut -d " " -f1 temp1>temp2
+n=0
+for a in  `cat temp2`
+do
+	if [ $a -ge 1000 ]
+	then
+		let n+=1
+	else
+		break
+	fi
+done
+let n+=1
+head -n $n temp1
+

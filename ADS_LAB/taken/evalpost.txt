@@ -1,0 +1,43 @@
+#include<stdio.h>
+#include<conio.h>
+
+void main()
+{
+	char expr[50];
+	int i=0,top=-1,a,b;
+	int stack[20];
+	clrscr();
+	printf("\t\t* Evaluation of Postifx *");
+	printf("\n\n"Enter the postfix expression : ");
+	scanf("%s",expr);
+	
+	while(expr[i]!=NULL)
+	{
+		if( expr[i]>= '0' && expr[i] <= '9' )
+			stack[++top]=expr[i] - '0';
+		else
+		{
+			b=stack[top--];
+			a=stack[top--];
+			if(expr[i]== '+')
+				a+=b;
+			else if(expr[i]== '-')
+				a-=b;
+			else if(expr[i]== '*')
+				a*=b;
+			else if(expr[i]== '/')
+				a/=b;
+			else
+				printf("\nInvalid operator in expression");
+			stack[++top]=a;
+		}
+	
+	i++;
+	}
+	if(top==0)
+		printf("The result is : %d",stack[0]);
+	else
+		printf("Expression entered is incorrect");
+	getch();
+	
+}

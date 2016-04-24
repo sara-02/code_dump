@@ -1,0 +1,34 @@
+echo "enter user name"
+read a
+
+who |grep $a >temp
+
+if [ -s temp ]
+	then
+		echo "user logged in"
+else
+	i=0
+	
+	sleep 60
+	let i+=1
+	while [ $i -le 4 ]
+	do
+	who |grep $a >temp
+	if [ -s temp ]
+		then
+			echo "user logged in"
+			break
+	else
+		sleep 60
+		let i+=1
+	fi
+	done
+	if [ $i -eq 5 ]
+		then
+			echo "user not logged in"
+	fi
+fi
+
+			
+	
+	

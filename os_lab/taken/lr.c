@@ -1,0 +1,87 @@
+#include<stdio.h>
+void main()
+{
+	int i=0,flag,l=0,max,j=0,k=0,f,pf=0,frame[10],fr[10][50],p[50],fl[10],n=0;
+	FILE *fp;
+	fp=fopen("process","r+");
+	printf("Pages are\n");
+	while(fscanf(fp,"%d",&p[n])!=EOF)
+	{
+		printf("%d\t",p[n]);
+		n++;
+	}
+	printf("\n\nEnter the frame size\n");
+	scanf("%d",&f);
+	for(i=0;i<f;i++)
+	{
+		fl[i]=0;
+		frame[i]=-1;
+	}
+	printf("\n\n");
+	while(k<n)
+	{
+		for(i=0;i<f;i++)
+			if(frame[i]!=-1)
+				fl[i]++;
+		if(frame[j]==-1 && j<f)
+		{
+			i=flag=0;
+			while(i<j)
+			{
+				if(frame[i]==p[k])
+				{
+					flag=1;
+					k++;
+					break;
+				}
+				i++;
+			}
+			if(flag==0)
+			{
+				pf++;
+				frame[j++]=p[k++];
+			}
+		}
+		else
+		{
+			i=flag=0;
+			for(i=0;i<f;i++)
+			{
+				if(frame[i]==p[k])
+				{
+					k++;
+					fl[i]=0;
+					flag=1;
+					break;
+				}
+			}
+			if(flag==0)
+			{
+				max=-99;
+				for(i=0;i<f;i++)
+				{
+					if(fl[i]>max)
+					{
+						max=fl[i];
+						j=i;
+					}
+				}
+				frame[j]=p[k++];
+				fl[j]=0;
+				pf++;
+			}
+		}
+		for(i=0;i<f;i++)
+			fr[i][l]=frame[i];
+		l++;
+	}
+	for(i=0;i<f;i++,printf("\n\n"))
+		for(k=0;k<l;k++)
+		{
+			if(fr[i][k]!=-1)
+				printf("%d\t",fr[i][k]);
+			else
+				printf("-\t");
+		}
+	printf("\n\nPage Fault is %d\n\n",pf);
+}

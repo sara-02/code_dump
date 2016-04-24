@@ -1,0 +1,19 @@
+echo "enter file1"
+read a
+echo "enter file2"
+read b
+if [ -r $a -a -r $b ]
+	then
+
+	cmp $a $b >temp
+	if [ -s temp ]
+		then
+			echo "files different"
+	else
+	        echo "files same"
+		rm $b
+	fi
+else
+	echo "cannot compare"
+fi
+ 

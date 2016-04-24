@@ -1,0 +1,132 @@
+create table vehicle57
+(
+	vcode varchar(10) primary key,
+	vtype varchar(10),
+	vcost int
+);
+
+create table spare57
+(
+	scode varchar(10) primary key,
+	s_vtype varchar(10),
+	cost int
+);
+
+create table dealer57
+(
+	dcode varchar(10) primary key,
+	dname varchar(10),
+	dloc varchar(10)
+);
+
+create table deals57
+(
+	vcode varchar(10),
+	dcode varchar(10),
+	vsold int,
+	vsyear int,
+	foreign key(vcode) references vehicle57(vcode)
+	on update cascade on delete cascade,
+	foreign key(dcode) references dealer57(dcode)
+	on update cascade on delete cascade
+);
+
+create table keeps57
+(
+	dcode varchar(10),
+	scode varchar(10),
+	ssold int,
+	syear int,
+	foreign key(dcode) references dealer57(dcode)
+	on update cascade on delete cascade,
+	foreign key(scode) references spare57(scode)
+	on update cascade on delete cascade
+);
+insert into vehicle57 values('C800','CAR',400000);
+insert into spare57 values('S1','CAR800',600);
+insert into deals57 values('C800','D1',100,2006);
+insert into keeps57 values('D1','S1',100,2006);
+insert into dealer57 values('D1','ALPHA','KOLKATA');
+insert into vehicle57 values('C1000','CAR',550000);
+insert into vehicle57 values('J1200','JEEP',700000);
+insert into spare57 values('S2','CAR800',800);
+insert into spare57 values('S3','CAR1000',1500);
+insert into spare57 values('S4','CAR1000',1000);
+insert into spare57 values('S5','JEEP',2000);
+insert into spare57 values('S6','JEEP',1900);
+insert into deals57 values('C800','D1',200,2007);
+insert into deals57 values('C1000','D1',350,2006);
+insert into deals57 values('C1000','D1',250,2007);
+insert into deals57 values('J1200','D1',200,2006);
+insert into deals57 values('J1200','D1',50,2007);
+insert into deals57 values('C800','D2',100,2006);
+insert into deals57 values('C800','D2',600,2007);
+insert into deals57 values('C1000','D2',450,2006);
+insert into deals57 values('C1000','D2',700,2007);
+insert into deals57 values('J1200','D2',300,2006);
+insert into deals57 values('J1200','D2',400,2007);
+insert into dealer57 values('D2','DELTA','DELHI');
+insert into dealer57 values('D3','GAMMA','PURI');
+insert into keeps57 values('D1','S1',300,2007);
+insert into keeps57 values('D2','S1',300,2007);
+insert into keeps57 values('D1','S2',200,2007);
+insert into keeps57 values('D2','S2',400,2006);
+insert into keeps57 values('D1','S3',40,2007);
+insert into keeps57 values('D1','S3',150,2006);
+insert into keeps57 values('D2','S3',400,2007);
+insert into keeps57 values('D2','S3',700,2006);
+insert into keeps57 values('D1','S4',150,2007);
+insert into keeps57 values('D2','S4',200,2007);
+insert into keeps57 values('D1','S4',800,2006);
+insert into keeps57 values('D1','S5',100,2006);
+insert into keeps57 values('D1','S5',300,2007);
+insert into keeps57 values('D2','S5',300,2006);
+insert into keeps57 values('D1','S6',250,2007);
+insert into keeps57 values('D2','S6',350,2006);
+insert into keeps57 values('D2','S6',550,2007);
+
+
+
+select * from dealer57 where dcode = (select dcode from deals57 where vsyear = 2007 and vsold = (select max(vsold) from deals57 where vsyear = 2007));
+
+select * from vehicle57 where vcode=(select vcode from deals57 where vsyear=2006 and vsold=(select min(vsold) from deals57 where vsyear=2006)limit 1);
+
+select vehicle57.vcode,vehicle57.vtype,vehicle57.vcost,deals57.vsyear, sum(vsold) from vehicle57,deals57 where vehicle57.vcode=deals57.vcode and vsyear=2007 group by vcode;
+
+select vehicle57.vcode,vehicle57.vtype,vehicle57.vcost,deals57.vsyear,deals57.dcode,sum(vsold) from vehicle57,deals57 where vehicle57.vcode=deals57.vcode and deals57.dcode='D2' and deals57.vsyear=2006 group by vcode;
+
+
+select dealer57.dname,dealer57.dloc,deals57.dcode,vehicle57.vcost,(vehicle57.vcost*deals57.vsold) as total,sum(vsold) as untis from vehicle57,dealer57,deals57 where dealer57.dcode=deals57.dcode and vehicle57.vcode=deals57.vcode and vsyear=2006 and deals57.vcode=(select vcode from vehicle57 where vtype='JEEP') group by dcode;
+
+ select spare57.s_vtype,spare57.scode,spare57.cost,keeps57.syear from spare57,keeps57 where keeps57.scode=spare57.scode and keeps57.scode NOT IN(select scode from keeps57 where dcode='D2' and syear=2007) and syear=2007;
+
+ select dealer57.dcode,dealer57.dname,dealer57.dloc,sum(ssold),sum(ssold)>200  from dealer57,keeps57 where dealer57.dcode=keeps57.dcode and syear=2007 group by dcode;
+
+select vcode,vcost,scode,scost from vehicle57,spare57 where vtye=stype and vtype='JEEP';
+
+select dname,cost,syear from keeps57,dealer57,spare57 where ssold in (select max(ssold) from keeps57 group by syear)
+and keeps57.dcode = dealer57.dcode and keeps57.scode = spare57.scode;
+
+select dname,cost,syear from spare57,dealer57,keeps57 where keeps57.scode in (select scode from keeps57 where ssold in (select max(ssold) from keeps57 group by syear)) and keeps57.scode=spare57.scode and keeps57.dcode=dealer57.dcode;
+
+select vcode,vsyear,sum(vsold) from deals57 where vcode in (select vcode from vehicle57 where vtype in(select s_vtype from spare57 where cost in(select max(cost) from spare57))) group by vsyear;
+
+select * from vehicle57 where vcode IN(select vcode from deals57 where dcode IN(select dcode from dealer57 where dloc='KOLKATA'));
+
+select sum(vsold) as JEEP_SALE from deals57 where vcode IN(select vcode from vehicle57 where vtype='JEEP');
+
+select sum(vsold) as sales from deals57 where vsyear=2007 and vcode IN(select vcode from vehicle57 where vtype='CAR');
+
+select spare57.scode,spare57.cost,syear,sum(ssold),sum(ssold)*spare57.cost from spare57,keeps57 where spare57.scode=keeps57.scode and keeps57.scode='S5' group by syear;
+
+select dcode,vcode,sum(vsold) from deals57 where dcode IN(select dcode from dealer57 where dname='ALPHA') group by vcode;
+
+select * from dealer57 where dcode IN(select dcode from keeps57 where scode IN(select scode from spare57 where s_vtype='CAR1000'));
+
+select * from spare57 where scode not in (select scode from keeps57 where syear=2006 and dcode='D1');
+
+
+
+
+
+

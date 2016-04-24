@@ -1,0 +1,20 @@
+create procedure s6()
+begin
+declare str1 varchar(100) default "";
+declare str2 varchar(10);
+declare flag int default 1;
+declare cn cursor for select distinct(city)from EMPLOYEE57;
+declare continue handler for NOT FOUND set flag=0;
+open cn;
+myloop:loop
+fetch cn into str2; 
+if flag=0 then
+leave myloop;
+else
+set str1=concat(str1,' ',str2);
+end if;
+iterate myloop;
+end loop;
+close cn;
+select str1;
+end#

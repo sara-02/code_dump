@@ -1,0 +1,58 @@
+#include<stdio.h>
+#include<conio.h>
+
+int precedence(char elem)
+{
+	switch(elem)
+	{
+	case '#':return 0;
+	
+	case ')':return 1;
+	
+	case '+':return 2;
+	case '-':return 2;
+	
+	case '*':return 3;
+	case '/':return 3;
+	}
+}
+
+void main()
+{
+	int i=0,k=0,top=-1;
+	char stack[40];
+	char ch,elem;
+	clrscr();
+	printf("Enter the infix expression : ");
+	scanf("%s",infix);
+	stack[++top]='#';
+	strrev(infix);
+	
+	while((ch=infix[i++])!='\0')
+	{
+			if(ch==')')
+				stack[++top]=ch;
+			else if(isalnum(ch))
+				prefix[k++]=ch;
+			else if(ch=='(')
+			{
+				while(ch!=')')
+					prefix[k++]=stack[top--];
+				elem=stack[top--];
+			}
+			else
+			{
+				while(precedence(ch)<=precedence(stack[top])
+					prefix[k++]=stack[top--];
+				stack[++top]=ch;
+			}
+			
+			while(stack[top]!='#')
+				prefix[k++]=stack[top--];
+			prefix[k]='\0';
+			
+			strrev(infix);
+			strrev(prefix);
+			printf("Infix entered : %s\nPrefix : %s",infix,prefix);
+	getch();
+}

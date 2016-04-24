@@ -1,0 +1,131 @@
+create database dbms_pro;
+use dbms_pro;
+//isko bhi ni banana abhi
+create table hostel_table
+(
+	hostel_id int NOT NULL,
+	hostel_name varchar(5),
+	PRIMARY KEY(hostel_id)
+);
+
+create table student
+(
+	stuid int NOT NULL,
+	stuna varchar(20),
+	stucourse varchar(50),
+	stuemail varchar(30),
+	studob date,
+	stucon bigint,
+	stunation varchar(30),
+	stublood varchar(5),
+	stufanm varchar(20),
+	stumanm varchar(20),
+	stucity varchar(20),
+	stustate varchar(20),
+	stuhostel varchar(5),
+	PRIMARY KEY(stuid)
+);
+
+create table locgs
+(
+	logid int NOT NULL AUTO_INCREMENT,
+	stuid int NOT NULL,
+	logna varchar(20),
+	logcon bigint,
+	PRIMARY KEY(logid),
+	FOREIGN KEY (stuid) REFERENCES student (stuid)
+	 ON DELETE CASCADE ON UPDATE CASCADE
+);
+create table rooms
+(
+	stuid int ,
+	room_no int NOT NULL,
+	hostel_id int NOT NULL,
+	seat_no int NOT NULL,
+	avail varchar(2),
+	PRIMARY KEY(room_no,hostel_id,seat_no),
+	FOREIGN KEY (stuid) REFERENCES student (stuid)
+	ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (hostel_id) references hostel_table (hostel_id)
+	ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+create table leave_table
+(
+	leave_id int NOT NULL AUTO_INCREMENT,
+	stuid int NOT NULL,
+	since date,
+	until date,
+	reason varchar (20),
+	PRIMARY KEY (leave_id),
+	FOREIGN KEY (stuid) REFERENCES student (stuid)
+	ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+create table late_table
+(
+	late_id int NOT NULL AUTO_INCREMENT,
+	stuid int NOT NULL,
+	reason varchar(30),
+	on_day date,
+	PRIMARY KEY (late_id),
+	FOREIGN KEY (stuid) REFERENCES student (stuid)
+	ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+create table complaint 
+(
+	stuid int NOT NULL,
+	comp_id int NOT NULL AUTO_INCREMENT,
+	problem varchar(50),
+	PRIMARY KEY(comp_id),
+	FOREIGN KEY (stuid) REFERENCES student (stuid)
+	ON DELETE CASCADE ON UPDATE CASCADE
+	
+);
+
+create table employee
+(
+	employee_id int NOT NULL,
+	emp_name varchar(20),
+	emp_contact bigint,
+	emp_cont int
+	emp_email varchar(30),
+	emp_address varchar(50),
+	emp_occupation varchar(20),
+	emp_since date,
+	emp_until date,
+	emp_dob date;
+	PRIMARY KEY(employee_id)
+);
+
+create table visitor
+(
+	visitor_id int NOT NULL AUTO_INCREMENT,
+	stuid int NOT NULL,
+	visitor_name varchar(20),
+	visitor_con int,
+	purpose varchar(30),
+	visi_date date,
+	PRIMARY KEY (visitor_id),
+	FOREIGN KEY (stuid) REFERENCES student (stuid)
+	ON DELETE CASCADE ON UPDATE CASCADE
+	 
+);
+//isko database nahi banana
+create table log_in
+(
+	user_id int NOT NULL,
+	pass varchar(20),
+	view_per int
+);
+
+insert into hostel_table values(1,'AAA');
+insert into hostel_table values(2,'BAK');
+insert into hostel_table values(3,'BMA');
+insert into hostel_table values(4,'GP');
+
+insert into log_in values(20126238,'project',1);
+
+
+

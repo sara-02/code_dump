@@ -1,0 +1,30 @@
+echo "enter the filename"
+read a
+if [ -r $a ]
+	then
+		l=`wc -l $a | cut -d " " -f1` #lines in the file
+		echo "enter the line position"
+		read pos
+		echo "enter the numberr of lines"
+		read n
+		i=0
+		j=0
+		while read c
+		do
+			let i+=1
+			if [ $i -ge $pos ]
+				then
+					echo $c
+					let j+=1
+					if [ $j -eq $n	]
+						then
+							exit
+					elif [ $j -eq $l ]
+						then
+							exit
+					fi
+			fi
+		done<$a
+else
+	echo "cutting not possible" 
+fi

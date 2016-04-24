@@ -1,0 +1,30 @@
+echo "enter the file name"
+read a
+if [ -r $a ]
+	then
+		echo "enter the argument"
+		read b
+		i=0
+		case $b in
+ 		'w')	for v in `cat $a`
+			do
+				let i+=1
+			done
+			echo "the number of words are $i";;
+		'l') while read c
+			do
+				let i+=1
+			done <$a
+			echo "the number of lines are $i";;
+		'c') 	
+			while read -n 1 c
+			do
+				let i+=1
+			done<$a
+			echo "the number of characters are $i";;
+		*)   echo "wrong choice entered";;
+		
+		esac
+else
+	echo "wc actions not possible"
+fi

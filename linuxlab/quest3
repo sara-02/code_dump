@@ -1,0 +1,15 @@
+t=`date +'%H'`
+echo "the current time is $t"
+
+if [ $t -ge 5 -a $t -le 12 ]
+	then
+		echo "GOOD MORNING"
+elif [ $t -gt 12 -a $t -le 15 ]
+	then
+		echo "GOOD AFTER NOON"
+elif [ $t -gt 15 -a $t le 19 ]
+	then
+		echo "GOOD EVENING"
+else
+	echo "GOOD NIGHT"
+fi  

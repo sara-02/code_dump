@@ -1,0 +1,19 @@
+if [ $# -eq 0 ]
+	then
+		echo "insufficient arguments"
+		exit
+fi
+
+for a in $*
+do
+	if [ -f $a ]
+		then
+			grep linux $a >temp
+			if [ -s temp ]
+				then
+					echo "the first file is $a"
+					exit
+			fi
+	fi
+done
+echo "no such file"

@@ -1,0 +1,43 @@
+if [ $# -eq 0 ]
+	then
+		echo "insuffiient arguments passed"
+		exit
+fi
+flag=0
+for a in $*
+do
+	if [ -s $a ]
+		then
+			echo "file exits"
+	else
+		echo "file does not exit"		
+		flag=1
+	fi
+
+
+
+done
+
+
+
+if [ $flag -eq 0 ]
+	then
+		echo "all files exits"
+else
+	if [ -d mydir ]
+		then
+			echo "dir exist"
+			cd mydir
+			ls
+	else
+		mkdir mydir
+		cd mydir
+		echo "dirc created"
+		for a in $*
+		do
+			 touch $a
+                                    		
+		done
+	fi
+fi
+		

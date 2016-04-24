@@ -1,0 +1,31 @@
+i=1
+echo $#
+j=$#
+if [ $j -eq 0 ]
+	then
+		echo "insufficient argument"
+		exit
+fi
+if [ `expr $j % 2` -eq 0 ]
+	then
+		while [ $i -le $j ]
+		do
+			if [ -r $1 -a -r $2 ]
+				then
+					f1=$1
+					f2=$2
+					cp $f1 $f2
+					echo "files copied"
+			else
+				echo "files cannot be copied"
+					
+			fi
+			shift 2
+			let i+=2
+		done
+
+else
+	echo "not possible with odd files"
+fi
+
+

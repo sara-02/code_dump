@@ -1,0 +1,54 @@
+#include<stdio.h>
+#include<conio.h>
+
+char * intopost(char *infix,char *postfix)
+{
+	int i=0,top=-1,k=0;
+	char stack[40];
+	
+	while(infix[i]!=NULL)
+	{
+		if(infix[i]>='a' &&infix[i]<='z')
+			postfix[k++]=infix[i];
+		else if(infix[i]=='(')
+			stack[++top]=infix[i];
+		else if(infix[i]==')')
+		{
+			while(stack[top]!='(')
+				postfix[k++]=stack[top--];
+		top--;
+		}
+		else if(infix[i]=='+' || infix[i]=='-')
+		{
+				while(stack[top]=='+' ||stack[top=='-'||stack[top]=='*'||stack[top]=='/')
+					postfix[k++]=stack[top--];
+		stack[++top]=infix[i];
+		}
+		else if(infix[i]=='*' || infix[i]=='/')
+		{
+				while(stack[top]=='*'||stack[top]=='/')
+					postfix[k++]=stack[top--];
+		stack[++top]=infix[i];
+		}
+	i++;
+	}
+	while(top>-1)
+		postfix[k++]=stack[top--];
+	postfix[k]=NULL;
+	return postfix;
+}
+
+void main()
+{
+	char *infix,*postfix;
+	clrscr();
+	infix=(char *)malloc(50);
+	postfix=(char *)malloc(50);
+	printf("\t\t* Infix to Postfix *");
+	printf("\n\nEnter the infix expression : ");
+	scanf("%s",infix);
+	postfix=intopost(infix,postfix);
+	printf("The postfix expression is : %s",postfix);
+	getch();
+		
+}
