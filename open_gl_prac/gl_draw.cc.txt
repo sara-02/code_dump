@@ -1,0 +1,352 @@
+/*
+   This is a very simple drawing program written in OpenGL and GLUT.
+   The window is divided into two parts, a menu area on the left and
+   a drawing area on the right.  The user can draw lines in the drawing
+   area by clicking and dragging (using the left mouse button).  If the 
+   shift key is down when the user STARTS drawing, the line is constrained
+   to begin vertical or horizontal.  The user can select a menu item 
+   by clicking it (with any mouse button).  The only menu options that
+   are implement are Clear and Undo.
+*/
+
+
+#include <GL/glut.h>
+#include <iostream>
+#include <cstring>
+#include <cmath>
+using namespace std;
+
+const int MAX_ITEMS = 1000; // Size of the array of lines.
+
+struct ItemData {
+   double x1, y1;  // Coordinates of one endpoint of the line.
+   double x2, y2;  // Coordinates of the second endpoint.
+};
+
+ItemData items[MAX_ITEMS];  // Holds the lines that the user has created.
+int itemCt = 0;  // Number of items in the array.
+
+int width;   // Current width of window; value is maintained by reshape().
+int height;  // Current height of window; value is maintained by reshape().
+
+
+//--------------------- This section implements drawing ----------------
+
+bool dragging = false;  // Set to true while the user is drawing.
+
+int dragModifiers;      // While the user is drawing, this holds the
+                        // state of the modifier keys at the START of
+                        // the drawing operation.  See the documentation
+                        // for glutGetModifiers().
+
+void handleStartDraw(double x, double y, int modifiers) {
+      // Called by the mouse() function when the user clicks the drawing
+      // area with the left mouse button.  (x,y) is the point where the
+      // user clicked, in the coordinate system used on the drawing area.
+      // modifiers encodes the modifier keys that the user is holding down.
+   if (itemCt == MAX_ITEMS) {
+      cout << "Can't draw more items; maximum number has been reached.\n";
+      return;
+   }
+
+   dragging = true;   // Set dragging to true to indicate drawing in progress.
+   dragModifiers = modifiers;
+
+   items[itemCt].x1 = x;   // The data for the line that is being
+   items[itemCt].y1 = y;   //    drawn.  The second point will be
+   items[itemCt].x2 = x;   //    modified in handleContinueDraw()
+   items[itemCt].y2 = y;   //    as the user moves the mouse.
+   itemCt++;
+}
+
+void handleContinueDraw(double x, double y) {
+      // Called by the motion() function when the user drags the 
+      //    mouse.  (x,y) is the mouse position, in drawing coords.
+   if (!dragging)
+      return;
+   int current = itemCt - 1;  // This is the position in the array
+                              //   of the line that is being drawn.
+   bool shifted = ((dragModifiers & GLUT_ACTIVE_SHIFT) != 0);
+   if (shifted) {
+          // Shift key was pressed.  Modify x or y to make the line veritcal.
+      if (abs(x - items[current].x1) > abs(y - items[current].y1))
+         y = items[current].y1;
+      else
+         x = items[current].x1;
+   }
+   items[current].x2 = x;  // Modify the terminal point of the line.
+   items[current].y2 = y;
+   glutPostRedisplay();    // Window must be redrawn to show modified line.
+}
+
+void handleFinishDraw(double x, double y) {
+      // Called by the mouse() function when the user releases the
+      //    mouse button.  (x,y) is the mouse position in drawing coords.
+   if (!dragging)
+      return;
+   dragging = false;   // End the draw operation.
+   int current = itemCt - 1;  // Position in array of the line.
+   if (items[current].x1 == items[current].x2 &&
+                  items[current].y1 == items[current].y2) {
+          // The mouse is at the point where the user started drawing,
+          // So no line was really drawn.  Decrementing itemCt
+          // effectively delets the zero-length line.
+       itemCt--;  
+   }
+   glutPostRedisplay();  // Redraw, just in case.
+}
+
+
+void handleMenuMouse(int x, int y, int modifiers) {
+     // This method is called when the user clicks the menu.  (x,y) is
+     // the point where the user clicked, in menu coordinates -- (0,0)
+     // at bottom left of the menu, (94, height) at upper right.
+     // modifiers encodes the modifier keys that the user was holding down.
+   if (y > height - 50) {
+         // Clear command; set itemCt to 0 and redraw.
+      itemCt = 0;
+      glutPostRedisplay();
+   }
+   else if (y > height - 100) {
+         // Undo command.  Decrement itemCt, is there is at least one item.
+      if (itemCt > 0) {
+         itemCt--;
+         glutPostRedisplay();
+      }
+   }
+}
+
+
+/**
+ *  Called in the main program to give you a chance to do initialization.
+ */
+void init() {
+}
+
+
+/**
+ *  You can call this to output a string.  The characters are scaled
+ *  to the size specified; the size is given in drawing coordinates.
+ *  The x,y parameters give the location of the left endpoint of the
+ *  base of the string.
+ */
+void drawString(const char *str, double x=0, double y=0, double size=1.0) {
+   glPushMatrix();
+   glTranslatef(x,y,0);
+   glScalef(size/153.0,size/153.0,1.0);
+   int itemCt = 0;
+   int len = strlen(str);
+   for (int i = 0; i < len; i++) {
+      if (str[i] == '\n') {
+         itemCt++;
+         glPopMatrix();
+         glPushMatrix();
+         glTranslatef(x,y-size*1.15*itemCt,0);
+         glScalef(size/153.0,size/153.0,1.0);
+      }
+      else {
+         glutStrokeCharacter(GLUT_STROKE_ROMAN,str[i]);
+      }
+   }
+   glPopMatrix();
+}
+
+
+void drawMenu() {
+      // This method is called by the display() function to draw the menu.
+      // The corrdinate system has already been set up, with (0,0) at
+      // the bottom left of the menu and (94,height) at the top right.
+
+   glColor3f(0.85,0.85,1);      // Fill the menu area with light blue.
+   glRectf(0,0,94,height);
+
+   glColor3f(0,0,0);    // Draw lines of width 2 around and across the menu.
+   glLineWidth(2);
+   glBegin(GL_LINES);
+
+      glVertex2f(1,1);    // Line at the top.
+      glVertex2f(94,1);
+
+      glVertex2f(1,1);        // Line at the left.
+      glVertex2f(1,height);
+
+      glVertex2f(93,1);       // Line at the right.
+      glVertex2f(93,height);
+
+      glVertex2f(0,height-1);     // Line at the bottom.
+      glVertex2f(94,height-1);
+      
+      glVertex2f(0,height-50);   // Line below the "Clear" command.
+      glVertex2f(94,height-50);
+
+      glVertex2f(0,height-100);   // Line below the "Undo" command.
+      glVertex2f(94,height-100);
+   glEnd();
+
+   glLineWidth(1);  // Restore line width to 1.
+
+   drawString("Clear",10,height-35,30);  // Draw the command names.
+   drawString("Undo",10,height-85,30);
+}
+
+
+void drawItems() {
+     // This is called by the display() function to draw the array of
+     // lines that have been created by the user.  The drawing area is
+     // already filled with white, and the coordinate system for drawing
+     // has been established -- (0,0) at bottom left, (1,1) at top right.
+   glColor3f(0,0,0);  // Draw the lines in black.
+   for (int i = 0; i < itemCt; i++) {
+      glBegin(GL_LINES);
+         glVertex2f(items[i].x1, items[i].y1);
+         glVertex2f(items[i].x2, items[i].y2);
+      glEnd();
+   }
+}
+
+
+/**
+ *  Called in the "display()" function before drawing anything.
+ *  Should set up the rand of coords that will be used for drawing.
+ *  Sets up a coordinate system on the viewport with x ranging from
+ *  x1 to x2 and y ranging from y1 to y2.
+ */
+void initTransformation(double x1, double x2, double y1, double y2) {
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   gluOrtho2D(x1,x2,y1,y2);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+}
+
+
+/**
+ *  The display callback, which is responsible for drawing the window.
+ *  Here it draws both the menu area and the drawing area.  The whole
+ *  window is first filled with white.
+ */
+void display() {
+   glClearColor(1.0,1.0,1.0,1.0);  // Set the color to use in glClear.
+   glClear(GL_COLOR_BUFFER_BIT);   // Fill the window with the color.
+
+   glViewport(94,0,width-94,height);  // Sets the part of the window
+                                      // used for the drawing area.
+
+   initTransformation(0,1,0,1);  // Establish coordinates on drawing area.
+
+   drawItems();  // Draw all the items that the user has created.
+   
+   glViewport(0,0,94,height);  // Sets the part of the window used
+                               // for the menu.
+
+   initTransformation(0,94,0,height);  // Establish coordinates for menu --
+                                       //   Same as the pixel coordinates.
+
+   drawMenu();  // Draw the menu.
+
+   glutSwapBuffers();  // Makes the drawing appear on the screen!
+}
+
+
+/**
+ *  Called when the user changes the size of the window.
+ *  Just record the new width and height in global variables.
+ */
+void reshape(int new_width, int new_height) {
+   height = new_height;
+   width = new_width;
+   glViewport(0,0,width,height);
+}
+
+
+/**
+ *  Called when the user presses or releases a mouse button.  The
+ *  first parameter tells which button it is; the second tells whether
+ *  the button is being pressed or released.  The (x,y) parameters give
+ *  the location of the mouse in pixel coords with (0,0) at the 
+ *  top left of the window and (width,height) at the bottom right.
+ *  Note that y increases from top to bottom of the window, which is
+ *  the reverse of the convention used in OpenGL.  Here, the
+ *  event is decoded and routed to one of the event-handling procedure
+ *  that are defined above.
+ */
+void mouse(int button, int state, int x, int y) {
+   if (x < 94 && state == GLUT_DOWN) {  // Mouse is in the menu area
+      handleMenuMouse(x,height-y,glutGetModifiers());
+   }
+   else if (button == GLUT_LEFT_BUTTON) {
+      double wx, wy;  // mouse position in drawing coordinates
+      wx = (double)(x-94)/(width-94);
+      wy = (double)(height-y)/height;
+      if (state == GLUT_DOWN)
+         handleStartDraw(wx,wy,glutGetModifiers());
+      else
+         handleFinishDraw(wx,wy);
+   }
+}
+
+
+/**
+ *  Called when the user moves the mouse.  Route this to the
+ *  handleContinueDraw() function, but only if a dragging operation
+ *  is in progress.
+ */
+void motion(int x, int y) {
+   if (dragging) {
+      double wx, wy;  // mouse position in drawing coordinates.
+      wx = (double)(x-94)/(width-94);
+      wy = (double)(height-y)/height;
+      handleContinueDraw(wx,wy);      
+   }
+}
+
+
+/**
+ *  Called when the user types a character.  Here, all it does is
+ *  exit the program when the user presses the escape key.
+ */
+void keyboard(unsigned char key, int x, int y) {
+   if (key == 27)  // This is the escape key.
+      exit(0);
+}
+
+
+/**
+ *  If you uncomment the glutSpecialFunc() call in the the main program,
+ *  then this will be called when the user presses certain special
+ *  keys on the keyboard, such  as the arrow keys and function keys.
+ */
+void special(int key, int x, int y) {
+}
+
+
+/**
+ *  If you uncomment the glutIdleFunc() call in the the main program,
+ *  then this will be called whenever the program does not have any
+ *  other events to process.  It is can be called repeatedly
+ *  while the program is idle.
+ */
+void idle() {
+}
+
+
+int main(int argc, char **argv) {
+
+   glutInit(&argc,argv);
+   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+   glutInitWindowSize(544,450);       // Set the size of the window here.
+   glutInitWindowPosition(150,50);    // Upper left corner of window.
+   glutCreateWindow("Simple Draw"); // Title displayed in window title bar.
+   
+   glutDisplayFunc(display);
+   glutReshapeFunc(reshape);
+
+   glutMouseFunc(mouse);       // Uncomment to enable mouse handling.
+   glutMotionFunc(motion);     // Uncomment to enable mouse motion handling. 
+   glutKeyboardFunc(keyboard); // Uncomment to enable ASCII key handling.
+   //glutSpecialFunc(special);   // Uncomment to enable special key handling.
+   //glutIdleFunc(idle);         // Uncomment to enable the idle function.
+   
+   init();
+   glutMainLoop();
+}
